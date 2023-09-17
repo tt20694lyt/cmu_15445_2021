@@ -26,19 +26,20 @@ BufferPoolManagerInstance::BufferPoolManagerInstance(size_t pool_size, uint32_t 
       num_instances_(num_instances),
       instance_index_(instance_index),
       next_page_id_(static_cast<page_id_t>(instance_index)),
-      disk_manager_(disk_manager),
-      log_manager_(log_manager) {
+      disk_manager_(disk_manager),//disk_manager_为磁盘管理器，提供从磁盘读入页面及写入页面的接口
+      log_manager_(log_manager) //log_manager_为日志管理器，本实验中不用考虑该组件；
+      {
   BUSTUB_ASSERT(num_instances > 0, "If BPI is not part of a pool, then the pool size should just be 1");
   BUSTUB_ASSERT(
       instance_index < num_instances,
       "BPI index cannot be greater than the number of BPIs in the pool. In non-parallel case, index should just be 1.");
   // We allocate a consecutive memory space for the buffer pool.
-  pages_ = new Page[pool_size_];
-  replacer_ = new LRUReplacer(pool_size);
+  pages_ = new Page[pool_size_];//pages_为缓冲池中的实际容器页面槽位数组,用于存放从磁盘中读入的页面，并供DBMS访问
+  replacer_ = new LRUReplacer(pool_size);//raplacer_用于选取所需驱逐的页面
 
   // Initially, every page is in the free list.
   for (size_t i = 0; i < pool_size_; ++i) {
-    free_list_.emplace_back(static_cast<int>(i));
+    free_list_.emplace_back(static_cast<int>(i));//free_list_保存缓冲池中的空闲槽位ID
   }
 }
 
@@ -59,7 +60,7 @@ bool BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) {
   if (page_id == INVALID_PAGE_ID) {
     return false;
   }
-  auto iter = page_table_.find(page_id);
+  auto iter = page_table_.find(page_id);//page_table_用于保存磁盘页面IDpage_id和槽位IDframe_id_t的映射
   // 如果page不在页表中
   if (iter == page_table_.end()) {
     return false;
